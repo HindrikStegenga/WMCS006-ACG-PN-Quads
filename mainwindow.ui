@@ -142,12 +142,22 @@ QGroupBox::title {
        </item>
        <item>
         <property name="text">
-         <string>Tesselation (regular surface)</string>
+         <string>Tesselated B-Spline surface (regular)</string>
         </property>
        </item>
        <item>
         <property name="text">
-         <string>Tesselation (limit surface)</string>
+         <string>Tesselated B-Spline surface (limit)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Tesselated PN-Quad surface (regular)</string>
+        </property>
+       </item>
+       <item>
+        <property name="text">
+         <string>Tesselated PN-Quad surface (limit)</string>
         </property>
        </item>
       </widget>

@@ -24,20 +24,39 @@ public:
 
     void regularDraw();
     void limitDraw();
-    void tesselatedDraw(GLuint tessVao);
+    void tesselatedBsplineDraw(GLuint tessVao);
+    void tesselatedPnQuadDraw(GLuint tessVao);
 private:
 
-    GLuint vao, limitVao, tesselationRegularVao, tesselationLimitVao;
-    GLuint meshCoordsBO, meshNormalsBO, meshIndexBO,
-           meshLimitCoordsBO, meshLimitNormalsBO, tessIndexBO;
+    GLuint vao,
+           limitVao,
+           bsplineTessRegularVao,
+           bsplineTessLimitVao,
+           pnQuadTessRegularVao,
+           pnQuadTessLimitVao;
+
+
+    GLuint meshCoordsBO,
+           meshNormalsBO,
+           meshIndexBO,
+           meshLimitCoordsBO,
+           meshLimitNormalsBO,
+           bsplineTessIndexBO,
+           pnQuadTessIndexBO;
+
+
     unsigned int meshIBOSize;
-    unsigned int patchCount;
-    QOpenGLShaderProgram shaderProg;
-    QOpenGLShaderProgram tessShaderProg;
+    unsigned int bsplinePatchCount;
+    unsigned int pnQuadPatchCount;
+
+    QOpenGLShaderProgram shaderProg,
+                         bsplineTessShaderProg,
+                         pnQuadTessShaderProg;
 
     // Uniforms
     GLint uniModelViewMatrix, uniProjectionMatrix, uniNormalMatrix;
-    GLint uniModelViewMatrixTess, uniProjectionMatrixTess, uniNormalMatrixTess;
+    GLint uniModelViewMatrixBsplineTess, uniProjectionMatrixBsplineTess, uniNormalMatrixBsplineTess;
+    GLint uniModelViewMatrixPnQuadTess, uniProjectionMatrixPnQuadTess, uniNormalMatrixPnQuadTess;
 };
 
 #endif // MESHRENDERER_H
