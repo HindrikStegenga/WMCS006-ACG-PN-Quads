@@ -1,6 +1,6 @@
 #-------------------------------------------------
 #
-# Project created by QtCreator 2016-12-08T16:31:55
+# Project created by QtCreator 2020-12-03T16:16:55
 #
 #-------------------------------------------------
 
@@ -8,7 +8,7 @@ QT       += core gui
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-TARGET = CatmarkSubdiv
+TARGET = PNQuads
 TEMPLATE = app
 
 
