@@ -28,7 +28,8 @@ public:
     inline QVector<QVector3D>& getVertexNorms() { return vertexNormals; }
     inline QVector<QVector3D>& getLimitNorms() { return limitNormals; }
     inline QVector<unsigned int>& getPolyIndices() { return polyIndices; }
-    inline QVector<unsigned int>& getTessPatchIndices() { return tessPatchIndices; }
+    inline QVector<unsigned int>& getBsplineTessPatchIndices() { return bsplineTessPatchIndices; }
+    inline QVector<unsigned int>& getPnQuadTessPatchIndices() { return pnquadTessPatchIndices; }
 
     void setTwins(unsigned int numHalfEdges, unsigned int indexH, QVector<QVector<unsigned int>>& potentialTwins);
 
@@ -52,7 +53,9 @@ public:
     void static computeLimitMesh(Mesh& mesh);
     void static computeQuadPatches(Mesh& mesh);
 
-    inline int patchCount() { return tessPatches.size(); };
+    inline int bsplinePatchCount() { return bsplineTessPatches.size(); };
+    inline int pnQuadPatchCount() { return pnQuadTessPatches.size(); };
+
     void subdivideCatmullClark(Mesh& mesh);
     void splitHalfEdges(QVector<Vertex>& newVertices, QVector<HalfEdge>& newHalfEdges);
 private:
@@ -67,8 +70,11 @@ private:
     QVector<QVector3D> vertexNormals;
     QVector<unsigned int> polyIndices;
 
-    QVector<QuadPatch> tessPatches;
-    QVector<unsigned int> tessPatchIndices;
+    QVector<QuadPatchWithNeighbourhood> bsplineTessPatches;
+    QVector<QuadPatch> pnQuadTessPatches;
+
+    QVector<unsigned int> bsplineTessPatchIndices, pnquadTessPatchIndices;
 };
 
 #endif // MESH_H
+

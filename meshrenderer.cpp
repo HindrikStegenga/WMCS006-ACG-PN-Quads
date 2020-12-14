@@ -11,11 +11,14 @@ MeshRenderer::~MeshRenderer() {
     gl->glDeleteVertexArrays(1, &limitVao);
     gl->glDeleteVertexArrays(1, &bsplineTessRegularVao);
     gl->glDeleteVertexArrays(1, &bsplineTessLimitVao);
+    gl->glDeleteVertexArrays(1, &pnQuadTessRegularVao);
+    gl->glDeleteVertexArrays(1, &pnQuadTessLimitVao);
 
     gl->glDeleteBuffers(1, &meshLimitCoordsBO);
     gl->glDeleteBuffers(1, &meshLimitNormalsBO);
 
     gl->glDeleteBuffers(1, &bsplineTessIndexBO);
+    gl->glDeleteBuffers(1, &pnQuadTessIndexBO);
 
     gl->glDeleteBuffers(1, &meshCoordsBO);
     gl->glDeleteBuffers(1, &meshNormalsBO);
@@ -59,8 +62,8 @@ void MeshRenderer::initShaders() {
 
     pnQuadTessShaderProg.create();
     pnQuadTessShaderProg.addShaderFromSourceFile(QOpenGLShader::Vertex, ":/shaders/tessVertShader.glsl");
-    pnQuadTessShaderProg.addShaderFromSourceFile(QOpenGLShader::TessellationControl, ":/shaders/bsplineControlShader.glsl");
-    pnQuadTessShaderProg.addShaderFromSourceFile(QOpenGLShader::TessellationEvaluation, ":/shaders/bsplineEvaluationShader.glsl");
+    pnQuadTessShaderProg.addShaderFromSourceFile(QOpenGLShader::TessellationControl, ":/shaders/pnquadControlShader.glsl");
+    pnQuadTessShaderProg.addShaderFromSourceFile(QOpenGLShader::TessellationEvaluation, ":/shaders/pnquadEvaluationShader.glsl");
     pnQuadTessShaderProg.addShaderFromSourceFile(QOpenGLShader::Fragment, ":/shaders/fragshader.glsl");
 
     pnQuadTessShaderProg.link();
@@ -148,6 +151,43 @@ void MeshRenderer::initBuffers() {
 
     gl->glBindVertexArray(0);
 
+    // Tesselated drawing (non limit surface)
+    gl->glGenVertexArrays(1, &pnQuadTessRegularVao);
+    gl->glBindVertexArray(pnQuadTessRegularVao);
+
+    // We can reuse buffers for tesselation.
+    gl->glBindBuffer(GL_ARRAY_BUFFER, meshCoordsBO);
+    gl->glEnableVertexAttribArray(0);
+    gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    gl->glBindBuffer(GL_ARRAY_BUFFER, meshNormalsBO);
+    gl->glEnableVertexAttribArray(1);
+    gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    // We do need a new index buffer however.
+    gl->glGenBuffers(1, &pnQuadTessIndexBO);
+    gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pnQuadTessIndexBO);
+
+    gl->glBindVertexArray(0);
+
+
+    // Tesselated drawing (limit surface)
+    gl->glGenVertexArrays(1, &pnQuadTessLimitVao);
+    gl->glBindVertexArray(pnQuadTessLimitVao);
+
+    // We can reuse buffers for tesselation.
+    gl->glBindBuffer(GL_ARRAY_BUFFER, meshLimitCoordsBO);
+    gl->glEnableVertexAttribArray(0);
+    gl->glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    gl->glBindBuffer(GL_ARRAY_BUFFER, meshLimitNormalsBO);
+    gl->glEnableVertexAttribArray(1);
+    gl->glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, 0);
+
+    gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pnQuadTessIndexBO);
+
+    gl->glBindVertexArray(0);
+
 }
 
 void MeshRenderer::updateBuffers(Mesh& currentMesh) {
@@ -164,8 +204,8 @@ void MeshRenderer::updateBuffers(Mesh& currentMesh) {
     QVector<QVector3D>& vertexLimitCoords = currentMesh.getLimitCoords();
     QVector<QVector3D>& vertexLimitNormals = currentMesh.getLimitNorms();
 
-    QVector<unsigned int>& tessPatchIndices = currentMesh.getTessPatchIndices();
-
+    QVector<unsigned int>& bsplineTessPatchIndices = currentMesh.getBsplineTessPatchIndices();
+    QVector<unsigned int>& pnQuadTessPatchIndices = currentMesh.getPnQuadTessPatchIndices();
 
     gl->glBindBuffer(GL_ARRAY_BUFFER, meshCoordsBO);
     gl->glBufferData(GL_ARRAY_BUFFER, sizeof(QVector3D)*vertexCoords.size(), vertexCoords.data(), GL_DYNAMIC_DRAW);
@@ -193,11 +233,17 @@ void MeshRenderer::updateBuffers(Mesh& currentMesh) {
     qDebug() << " → Updated meshIndexBO";
 
     gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, bsplineTessIndexBO);
-    gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)*tessPatchIndices.size(), tessPatchIndices.data(), GL_DYNAMIC_DRAW);
+    gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)*bsplineTessPatchIndices.size(), bsplineTessPatchIndices.data(), GL_DYNAMIC_DRAW);
 
-    qDebug() << " → Updated tessIndexBO";
+    qDebug() << " → Updated bsplineTessIndexBO";
 
-    bsplinePatchCount = tessPatchIndices.size();
+    gl->glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, pnQuadTessIndexBO);
+    gl->glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int)*pnQuadTessPatchIndices.size(), pnQuadTessPatchIndices.data(), GL_DYNAMIC_DRAW);
+
+    qDebug() << " → Updated pnQuadTessIndexBO";
+
+    bsplinePatchCount = bsplineTessPatchIndices.size();
+    pnQuadPatchCount = pnQuadTessPatchIndices.size();
     meshIBOSize = polyIndices.size();
 }
 
@@ -391,5 +437,60 @@ void MeshRenderer::tesselatedBsplineDraw(GLuint tessVao) {
 
 void MeshRenderer::tesselatedPnQuadDraw(GLuint tessVao) {
 
+    pnQuadTessShaderProg.bind();
+    pnQuadTessShaderProg.setUniformValue("materialColour", 0.5, 0.5, 0.5);
+
+    if (settings->wireframeMode) {
+        gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+        pnQuadTessShaderProg.setUniformValue("approxFlatShading", false);
+        pnQuadTessShaderProg.setUniformValue("disableLighting", true);
+        pnQuadTessShaderProg.setUniformValue("analyticalNormals", false);
+    } else {
+        gl->glPolygonMode( GL_FRONT_AND_BACK, GL_FILL);
+        pnQuadTessShaderProg.setUniformValue("approxFlatShading", settings->approxFlatShading);
+        pnQuadTessShaderProg.setUniformValue("analyticalNormals", settings->analyticalNormals);
+        pnQuadTessShaderProg.setUniformValue("disableLighting", false);
+    }
+
+    // Set all the tesselation levels.
+
+    pnQuadTessShaderProg.setUniformValue("tessInner0", settings->tessLevelInner0);
+    pnQuadTessShaderProg.setUniformValue("tessInner1", settings->tessLevelInner1);
+    pnQuadTessShaderProg.setUniformValue("tessOuter0", settings->tessLevelOuter0);
+    pnQuadTessShaderProg.setUniformValue("tessOuter1", settings->tessLevelOuter1);
+    pnQuadTessShaderProg.setUniformValue("tessOuter2", settings->tessLevelOuter2);
+    pnQuadTessShaderProg.setUniformValue("tessOuter3", settings->tessLevelOuter3);
+
+    // Bind the tesselation vao and 'render' the control patches.
+
+    gl->glBindVertexArray(tessVao);
+    gl->glPatchParameteri(GL_PATCH_VERTICES, 4);
+    gl->glDrawElements(GL_PATCHES, pnQuadPatchCount, GL_UNSIGNED_INT, 0);
+    qDebug() << glGetError();
+    gl->glBindVertexArray(0);
+    pnQuadTessShaderProg.release();
+
+
+    if (settings->showNonTesselatedWireframe) {
+
+        shaderProg.bind();
+        //enable primitive restart
+        gl->glEnable(GL_PRIMITIVE_RESTART);
+        gl->glPrimitiveRestartIndex(INT_MAX);
+
+        // Draw regular variant
+        shaderProg.setUniformValue("materialColour", 0.0, 0.0, 1.0);
+        shaderProg.setUniformValue("approxFlatShading", false);
+        shaderProg.setUniformValue("disableLighting", true);
+        gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
+        gl->glBindVertexArray(vao);
+        gl->glDrawElements(GL_LINE_LOOP, meshIBOSize, GL_UNSIGNED_INT, 0);
+        gl->glBindVertexArray(0);
+
+        shaderProg.release();
+
+        //disable it again as you might want to draw something else at some point
+        gl->glDisable(GL_PRIMITIVE_RESTART);
+    }
 }
 

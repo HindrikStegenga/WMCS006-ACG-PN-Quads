@@ -411,8 +411,8 @@ void Mesh::computeLimitMesh(Mesh &mesh) {
     mesh.extractAttributes();
 }
 
-QuadPatch extractQuadPatch(Face& face) {
-    QuadPatch patch;
+QuadPatchWithNeighbourhood extractQuadPatchWithNeighbourhood(Face& face) {
+    QuadPatchWithNeighbourhood patch;
 
     // F marks the face. s marks the side edge of F.
     //  p12 - p13 - p14 - p15
@@ -477,6 +477,24 @@ QuadPatch extractQuadPatch(Face& face) {
     return patch;
 }
 
+QuadPatch extractQuadPatch(Face& face) {
+    auto p5p6 = face.side;
+    auto p6p10 = face.side->next;
+    auto p10p9 = face.side->next->next;
+    auto p9p5 = face.side->prev;
+    auto patch = QuadPatch{};
+
+    patch.vertIndices = {
+        p5p6->target->index,
+        p6p10->target->index,
+        p10p9->target->index,
+        p9p5->target->index
+    };
+
+    return patch;
+}
+
+
 // Checks if a face is regular or not.
 // Basically walks the neighbourhood of the current face and checks if the neighbouring ones are quads as well.
 bool isRegularFace(Face& face) {
@@ -501,13 +519,21 @@ bool isRegularFace(Face& face) {
 // Grabs all the quad patches for tesselated drawing
 void Mesh::computeQuadPatches(Mesh &mesh) {
 
-    mesh.tessPatches.clear();
-    mesh.tessPatches.reserve(mesh.faces.size());
+    mesh.bsplineTessPatches.clear();
+    mesh.bsplineTessPatches.reserve(mesh.faces.size());
+
+    mesh.pnQuadTessPatches.clear();
+    mesh.pnQuadTessPatches.reserve(mesh.faces.size());
 
     for(int k = 0; k < mesh.faces.size(); ++k) {
         auto face = mesh.faces[k];
+
+        if (face.val == 4) {
+            mesh.pnQuadTessPatches.push_back(extractQuadPatch(face));
+        }
+
         if (isRegularFace(face))
-            mesh.tessPatches.push_back(extractQuadPatch(face));
+            mesh.bsplineTessPatches.push_back(extractQuadPatchWithNeighbourhood(face));
     }
 }
 

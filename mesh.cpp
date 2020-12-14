@@ -157,14 +157,23 @@ void Mesh::extractAttributes() {
         limitNormals.append( computeLimitNormal(&vertices[k]) );
     }
 
-    tessPatchIndices.clear();
-    tessPatchIndices.reserve(vertices.size() * 16);
+    bsplineTessPatchIndices.clear();
+    bsplineTessPatchIndices.reserve(vertices.size() * 16);
 
-    for (int k = 0; k < tessPatches.size(); ++k) {
+    for (int k = 0; k < bsplineTessPatches.size(); ++k) {
         for (int c = 0; c < 16; ++c) {
-            tessPatchIndices.push_back(tessPatches[k].vertIndices[c]);
+            bsplineTessPatchIndices.push_back(bsplineTessPatches[k].vertIndices[c]);
         }
     }
+
+    pnquadTessPatchIndices.clear();
+    pnquadTessPatchIndices.reserve(vertices.size() * 4);
+    for (int k = 0; k < pnQuadTessPatches.size(); ++k) {
+        for (int c = 0; c < 4; ++c) {
+            pnquadTessPatchIndices.push_back(pnQuadTessPatches[k].vertIndices[c]);
+        }
+    }
+
 
     polyIndices.clear();
     polyIndices.reserve(halfEdges.size() + faces.size());

@@ -5,5 +5,7 @@
         <file>shaders/bsplineControlShader.glsl</file>
         <file>shaders/bsplineEvaluationShader.glsl</file>
         <file>shaders/tessVertShader.glsl</file>
+        <file>shaders/pnquadControlShader.glsl</file>
+        <file>shaders/pnquadEvaluationShader.glsl</file>
     </qresource>
 </RCC>

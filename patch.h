@@ -6,7 +6,7 @@
 
 using std::array;
 
-// Represents a patch.
+// Represents a quad patch with neighbours.
 // our patch is located at:
 //
 //  (1,2) - - - (2, 2)
@@ -20,11 +20,18 @@ using std::array;
 //  (1,2) => 9
 //  (1,1) => 10
 
-class QuadPatch {
+class QuadPatchWithNeighbourhood {
 public:
     // These are indices into the half edge vertices structure!!
     array<unsigned int, 16> vertIndices;
 };
 
+
+// Represents a single quad patch.
+class QuadPatch {
+public:
+    // These are indices into the half edge vertices structure!!
+    array<unsigned int, 4> vertIndices;
+};
 
 #endif // PATCH_H
