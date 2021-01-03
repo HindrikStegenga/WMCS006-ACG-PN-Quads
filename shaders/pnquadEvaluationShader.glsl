@@ -139,14 +139,13 @@ void main() {
             + nu2*(nv0*n3 + nv1*n23 + nv2*n2);
 
 
+    vertnormal_camera_fs = normalize(normalmatrix * vertnormal_camera_fs);
+    vertcoords_camera_fs = vec3(modelviewmatrix * gl_Position);
 
 
     // Apply projectionmatrix and modelviewmatrix
     gl_Position = projectionmatrix * modelviewmatrix * gl_Position;
 
-
-    vertnormal_camera_fs = normalize(normalmatrix * vertnormal_camera_fs);
-    vertcoords_camera_fs = vec3(0,1,0);
     /*
     // Repeat this process for vertcoords_camera_fs
     vertcoords_camera_fs = b_0(u) * ( b_0(v) * bc0  + b_1(v) * bc01 + b_2(v) * bc10 + b_3(v) * bc1  )
