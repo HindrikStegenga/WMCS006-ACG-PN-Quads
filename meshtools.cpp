@@ -377,6 +377,9 @@ void Mesh::computeLimitMesh(Mesh &mesh) {
     for(int i = 0; i < mesh.vertices.size(); ++i) {
         Vertex& sourceVertex = mesh.vertices[i];
         QVector3D vertexLimitPt = QVector3D();
+        QVector3D faceEdgeSum = QVector3D(0.0,0.0,0.0);
+        HalfEdge *initial = sourceVertex.out;
+        HalfEdge *current = initial;
 
         // Check for boundary vertex.
         if (HalfEdge* boundaryEdge = vertOnBoundary(&sourceVertex)) {
@@ -391,20 +394,27 @@ void Mesh::computeLimitMesh(Mesh &mesh) {
                 vertexLimitPt /= 6.0;
             }
         } else {
-            // Apply equation from the paper to compute p0.
-            auto sumParts = getOutgoingEdgeSumParts(&sourceVertex);
-            float n = sourceVertex.val;
+            float n = (float) sourceVertex.val;
+            vertexLimitPt += (n-3) / (n+5) * sourceVertex.coords;
+            do {
+               QVector3D faceSum = QVector3D(0.0,0.0,0.0);
+               faceEdgeSum+= (current->target->coords + current->twin->target->coords) / 2; //Halfpoint of edge
 
-            float firstPart = (n - 3.0) / (n + 5.0);
-            float secondPart = (4.0 / (n * (n + 5.0)));
+               HalfEdge *currentFaceEdge = current;
+               if (current->polygon != nullptr) { //Get midpoint of face
+                   int v = current->polygon->val;
+                   do {
+                       faceSum+= currentFaceEdge->target->coords/v;
 
-            QVector3D p0 = firstPart * sourceVertex.coords;
-            QVector3D sumResult = QVector3D();
-            for(auto& k : sumParts) {
-                sumResult += k;
-            }
-            p0 +=  secondPart * sumResult;
-            vertexLimitPt = p0;
+                       currentFaceEdge = currentFaceEdge->next;
+                   } while (currentFaceEdge != current);
+               }
+               faceEdgeSum+= faceSum;
+               current = current->twin->next;
+
+            } while (current != initial);
+            faceEdgeSum *= (4/(n*(n+5)));
+            vertexLimitPt += faceEdgeSum;
         }
         mesh.vertices[i].limitCoords = vertexLimitPt;
     }

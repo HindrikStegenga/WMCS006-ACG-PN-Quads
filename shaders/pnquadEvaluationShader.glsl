@@ -14,7 +14,7 @@ uniform bool analyticalNormals;
 out vec3 vertcoords_camera_fs;
 out vec3 vertnormal_camera_fs;
 
-uniform float sigma = 1.0;
+uniform float sigma = 0.5;
 
 // Basis functions for Bézier surface.
 float b_0(float t) {
