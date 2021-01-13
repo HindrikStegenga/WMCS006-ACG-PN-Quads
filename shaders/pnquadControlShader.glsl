@@ -1,8 +1,8 @@
 #version 410
 layout(vertices = 4) out;
 
-in vec3 vertcoords_camera_fs[];
-in vec3 vertnormal_camera_fs[];
+layout (location = 0) in vec3 vertcoords_camera_fs[];
+layout (location = 1) in vec3 vertnormal_camera_fs[];
 
 uniform mat3 normalmatrix;
 
@@ -13,8 +13,8 @@ uniform int tessOuter1;
 uniform int tessOuter2;
 uniform int tessOuter3;
 
-out vec3 tess_vertcoords_camera_fs[];
-out vec3 tess_vertnormal_camera_fs[];
+layout (location = 0) out vec3 tess_vertcoords_camera_fs[];
+layout (location = 1) out vec3 tess_vertnormal_camera_fs[];
 
 void main() {
     gl_TessLevelInner[0] = tessInner0;

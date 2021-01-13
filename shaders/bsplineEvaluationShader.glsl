@@ -2,8 +2,8 @@
 
 layout(quads, equal_spacing, ccw) in;
 
-in vec3 tess_vertcoords_camera_fs[];
-in vec3 tess_vertnormal_camera_fs[];
+layout (location = 0) in vec3 tess_vertcoords_camera_fs[];
+layout (location = 1)in vec3 tess_vertnormal_camera_fs[];
 
 uniform mat4 modelviewmatrix;
 uniform mat4 projectionmatrix;
@@ -11,8 +11,8 @@ uniform mat3 normalmatrix;
 
 uniform bool analyticalNormals;
 
-out vec3 vertcoords_camera_fs;
-out vec3 vertnormal_camera_fs;
+layout (location = 0) out vec3 vertcoords_camera_fs;
+layout (location = 1) out vec3 vertnormal_camera_fs;
 
 
 // Basis functions for B-Spline surface.
