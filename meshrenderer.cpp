@@ -439,6 +439,7 @@ void MeshRenderer::tesselatedPnQuadDraw(GLuint tessVao) {
 
     pnQuadTessShaderProg.bind();
     pnQuadTessShaderProg.setUniformValue("materialColour", 0.5, 0.5, 0.5);
+    pnQuadTessShaderProg.setUniformValue("sigma", settings->sigma);
 
     if (settings->wireframeMode) {
         gl->glPolygonMode( GL_FRONT_AND_BACK, GL_LINE);
@@ -450,6 +451,7 @@ void MeshRenderer::tesselatedPnQuadDraw(GLuint tessVao) {
         pnQuadTessShaderProg.setUniformValue("approxFlatShading", settings->approxFlatShading);
         pnQuadTessShaderProg.setUniformValue("analyticalNormals", settings->analyticalNormals);
         pnQuadTessShaderProg.setUniformValue("disableLighting", false);
+
     }
 
     // Set all the tesselation levels.

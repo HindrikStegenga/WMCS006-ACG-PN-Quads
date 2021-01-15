@@ -15,6 +15,7 @@ public:
     int lastSubdivLevel;
     bool showNonTesselatedWireframe;
     bool analyticalNormals;
+    float sigma;
 
     int tessLevelInner0, tessLevelInner1, tessLevelOuter0, tessLevelOuter1, tessLevelOuter2, tessLevelOuter3;
 

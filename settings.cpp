@@ -18,6 +18,7 @@ Settings::Settings()
     approxFlatShading = false;
     uniformUpdateRequired = true;
     lastSubdivLevel = 0;
+    sigma = 0.5;
 
     rotAngle = 0.0;
     dispRatio = 16.0/9.0;

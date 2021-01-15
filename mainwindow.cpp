@@ -134,3 +134,12 @@ void MainWindow::on_analyticalNormalsCheckbox_toggled(bool checked)
     ui->MainDisplay->updateBuffers( meshes[value] );
     ui->MainDisplay->update();
 }
+
+void MainWindow::on_sigmaSlider_valueChanged(int arg1) {
+    float sigma = float (arg1) / 100.0;
+    qDebug() << "Sigma changed to:" << sigma;
+    ui->MainDisplay->settings.sigma = sigma;
+    ui->sigmaLabel->setText(QString::number(sigma));
+    ui->MainDisplay->update();
+
+}

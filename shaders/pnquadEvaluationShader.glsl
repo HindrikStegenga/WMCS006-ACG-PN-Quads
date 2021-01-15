@@ -10,11 +10,12 @@ uniform mat4 projectionmatrix;
 uniform mat3 normalmatrix;
 
 uniform bool analyticalNormals;
+uniform float sigma;
 
 layout (location = 0) out vec3 vertcoords_camera_fs;
 layout (location = 1) out vec3 vertnormal_camera_fs;
 
-uniform float sigma = 0.5;
+
 
 // Basis functions for Bézier surface.
 float b_0(float t) {

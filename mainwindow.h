@@ -46,6 +46,8 @@ private slots:
 
   void on_analyticalNormalsCheckbox_toggled(bool checked);
 
+  void on_sigmaSlider_valueChanged(int arg1);
+
 private:
   Ui::MainWindow *ui;
 };
