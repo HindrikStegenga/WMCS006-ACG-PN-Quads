@@ -13,19 +13,23 @@ TEMPLATE = app
 
 
 SOURCES += main.cpp\
+    bsplinerenderer.cpp \
         mainwindow.cpp \
     meshrenderer.cpp \
     objfile.cpp \
     mesh.cpp \
     meshtools.cpp \
     mainview.cpp \
+    pnquadrenderer.cpp \
     settings.cpp
 
 HEADERS  += mainwindow.h \
+    bsplinerenderer.h \
     mesh.h \
     meshrenderer.h \
     objfile.h \
     patch.h \
+    pnquadrenderer.h \
     renderer.h \
     settings.h \
     vertex.h \

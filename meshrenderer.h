@@ -20,43 +20,29 @@ public:
     void updateUniforms();
 
     void updateBuffers(Mesh& m);
-    void draw();
+    void draw(bool limit, bool wireFrame);
 
     void regularDraw();
     void limitDraw();
     void tesselatedBsplineDraw(GLuint tessVao);
     void tesselatedPnQuadDraw(GLuint tessVao);
-private:
+protected:
 
     GLuint vao,
-           limitVao,
-           bsplineTessRegularVao,
-           bsplineTessLimitVao,
-           pnQuadTessRegularVao,
-           pnQuadTessLimitVao;
-
+           limitVao;
 
     GLuint meshCoordsBO,
            meshNormalsBO,
            meshIndexBO,
            meshLimitCoordsBO,
-           meshLimitNormalsBO,
-           bsplineTessIndexBO,
-           pnQuadTessIndexBO;
-
+           meshLimitNormalsBO;
 
     unsigned int meshIBOSize;
-    unsigned int bsplinePatchCount;
-    unsigned int pnQuadPatchCount;
 
-    QOpenGLShaderProgram shaderProg,
-                         bsplineTessShaderProg,
-                         pnQuadTessShaderProg;
+    QOpenGLShaderProgram shaderProg;
 
     // Uniforms
     GLint uniModelViewMatrix, uniProjectionMatrix, uniNormalMatrix;
-    GLint uniModelViewMatrixBsplineTess, uniProjectionMatrixBsplineTess, uniNormalMatrixBsplineTess;
-    GLint uniModelViewMatrixPnQuadTess, uniProjectionMatrixPnQuadTess, uniNormalMatrixPnQuadTess;
 };
 
 #endif // MESHRENDERER_H

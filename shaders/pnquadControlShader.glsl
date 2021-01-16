@@ -14,8 +14,9 @@ uniform int tessOuter1;
 uniform int tessOuter2;
 uniform int tessOuter3;
 
-layout (location = 0) patch out vec3 cp [16];
-layout (location = 16) patch out vec3 np [9];
+
+layout (location = 0) patch out vec3 cp [16]; //Geometry patch
+layout (location = 16) patch out vec3 np [9]; //Normal patch
 
 void main() {
 

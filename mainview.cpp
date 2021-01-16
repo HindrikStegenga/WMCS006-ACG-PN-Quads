@@ -45,6 +45,8 @@ void MainView::initializeGL() {
 
     // initialize renderers here with the current context
     mr.init(functions, &settings);
+    pqr.init(functions, &settings);
+    br.init(functions, &settings);
 
     updateMatrices();
 }
@@ -76,6 +78,8 @@ void MainView::updateMatrices() {
 
 void MainView::updateBuffers(Mesh &currentMesh) {
     mr.updateBuffers(currentMesh);
+    pqr.updateBuffers(currentMesh);
+    br.updateBuffers(currentMesh);
 }
 
 
@@ -91,7 +95,32 @@ void MainView::paintGL() {
 
 
     if (settings.modelLoaded) {
-        mr.draw();
+        switch (settings.renderingMode) {
+            case 0:
+                mr.draw(false, false);
+            break;
+            case 1:
+                mr.draw(true, false);
+            break;
+            case 2:
+                br.draw(false);
+            break;
+            case 3:
+                br.draw(true);
+            break;
+            case 4:
+                pqr.draw(false);
+            break;
+            case 5:
+                pqr.draw(true);
+            break;
+            default:
+            break;
+        }
+        if (settings.showNonTesselatedWireframe) {
+            settings.uniformUpdateRequired = true;
+            mr.draw(false, true);
+        }
     }
 }
 

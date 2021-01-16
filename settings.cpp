@@ -17,6 +17,7 @@ Settings::Settings()
     wireframeMode = true;
     approxFlatShading = false;
     uniformUpdateRequired = true;
+    showNonTesselatedWireframe = false;
     lastSubdivLevel = 0;
     sigma = 0.5;
 

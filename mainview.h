@@ -9,6 +9,8 @@
 
 #include "mesh.h"
 #include "meshrenderer.h"
+#include "pnquadrenderer.h"
+#include "bsplinerenderer.h"
 
 class MainView : public QOpenGLWidget, protected QOpenGLFunctions_4_1_Core {
 
@@ -45,6 +47,8 @@ private:
   bool dragging;
 
   MeshRenderer mr;
+  PnQuadRenderer pqr;
+  BsplineRenderer br;
 
   Settings settings;
 
