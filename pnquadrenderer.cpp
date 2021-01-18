@@ -126,7 +126,6 @@ void PnQuadRenderer::draw(bool limit) {
     gl->glBindVertexArray(tessVao);
     gl->glPatchParameteri(GL_PATCH_VERTICES, 4);
     gl->glDrawElements(GL_PATCHES, meshIBOSize, GL_UNSIGNED_INT, 0);
-    qDebug() << glGetError();
     gl->glBindVertexArray(0);
     shaderProg.release();
 

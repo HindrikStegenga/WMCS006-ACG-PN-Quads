@@ -21,11 +21,6 @@ public:
 
     void updateBuffers(Mesh& m);
     void draw(bool limit, bool wireFrame);
-
-    void regularDraw();
-    void limitDraw();
-    void tesselatedBsplineDraw(GLuint tessVao);
-    void tesselatedPnQuadDraw(GLuint tessVao);
 protected:
 
     GLuint vao,
