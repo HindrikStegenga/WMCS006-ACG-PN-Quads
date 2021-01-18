@@ -34,13 +34,31 @@ float b_3(float t) {
     return t * t * t;
 }
 
+// Derivates of Bézier surface functions.
+float pd_b0(float t) {
+    return -3.0 * (t - 1.0) * (t - 1.0);
+}
+
+float pd_b1(float t) {
+    return 3 * (t - 1.0) * (3 * t - 1.0);
+}
+
+float pd_b2(float t) {
+    return 6.0 * t - 9 * t * t;
+}
+
+float pd_b3(float t) {
+    return 3 * t * t;
+}
+
+
 void main() {
 
     //  b0  - b03 - b30 - b3
     //  |     |     |     |
-    //  b01 - b02 - b31 - p32
+    //  b01 - b02 - b31 - b32
     //  |     |     |     |
-    //  b10 - b13 - b20 - p23
+    //  b10 - b13 - b20 - b23
     //  |     |     |     |
     //  b1 -  b12 - b21 - b2
 
@@ -126,21 +144,48 @@ void main() {
                      + b_3(su) * (b_0(sv) * b3  + b_1(sv) * b32 + b_2(sv) * b23 + b_3(sv) * b2), 1);
 
 
+    if (analyticalNormals == false) {
+        float nu0 = (1.0 - su) * (1.0 - su);
+        float nu1 = 2.0 * su * (1.0 - su);
+        float nu2 = su * su;
 
-    float nu0 = (1.0 - su) * (1.0 - su);
-    float nu1 = 2.0 * su * (1.0 - su);
-    float nu2 = su * su;
+        float nv0 = (1.0 - sv) * (1.0 - sv);
+        float nv1 = 2.0 * sv * (1.0 - sv);
+        float nv2 = sv * sv;
 
-    float nv0 = (1.0 - sv) * (1.0 - sv);
-    float nv1 = 2.0 * sv * (1.0 - sv);
-    float nv2 = sv * sv;
-
-    vertnormal_camera_fs = nu0*(nv0 * n0  + nv1 * n01   + nv2 * n1)
-                         + nu1*(nv0 * n30 + nv1 * n0123 + nv2 * n12)
-                         + nu2*(nv0 * n3  + nv1 * n23   + nv2 * n2);
+        vertnormal_camera_fs = nu0 * (nv0 * n0  + nv1 * n01   + nv2 * n1)
+                             + nu1 * (nv0 * n30 + nv1 * n0123 + nv2 * n12)
+                             + nu2 * (nv0 * n3  + nv1 * n23   + nv2 * n2);
 
 
-    vertnormal_camera_fs = normalize(normalmatrix * vertnormal_camera_fs);
+        vertnormal_camera_fs = normalize(normalmatrix * vertnormal_camera_fs);
+    } else {
+        // use derivatives of the basis functions to compute analytical normal of the vertex using tensor product.
+        // I chose to just do the normal computation in world space for the vertices, since the position
+        // doesn't matter for computing a normal anyway.
+
+
+        // Tangent vector in su direction
+        vec3 dpdu =   pd_b0(su) * ( b_0(sv) * b0  + b_1(sv) * b01 + b_2(sv) * b10 + b_3(sv) * b1 )
+                    + pd_b1(su) * ( b_0(sv) * b03 + b_1(sv) * b02 + b_2(sv) * b13 + b_3(sv) * b12 )
+                    + pd_b2(su) * ( b_0(sv) * b30 + b_1(sv) * b31 + b_2(sv) * b20 + b_3(sv) * b21 )
+                    + pd_b3(su) * ( b_0(sv) * b3  + b_1(sv) * b32 + b_2(sv) * b23 + b_3(sv) * b2 );
+
+        // Tangent vector in sv direction
+        vec3 dpdv =   b_0(su) * ( pd_b0(sv) * b0  + pd_b1(sv) * b01 + pd_b2(sv) * b10 + pd_b3(sv) * b1 )
+                    + b_1(su) * ( pd_b0(sv) * b03 + pd_b1(sv) * b02 + pd_b2(sv) * b31 + pd_b3(sv) * b12 )
+                    + b_2(su) * ( pd_b0(sv) * b30 + pd_b1(sv) * b31 + pd_b2(sv) * b20 + pd_b3(sv) * b21 )
+                    + b_3(su) * ( pd_b0(sv) * b3  + pd_b1(sv) * b32 + pd_b2(sv) * b23 + pd_b3(sv) * b2 );
+
+
+        // Cross, normalize and multiply with the normals matrix (and another normalize) to get analytical normal.
+        // We also need to invert the normal here.
+        // This normal is then interpolated in the fragment shader automatically.
+        vec3 normal = normalize(cross(dpdu, dpdv)) * -1.0;
+        vertnormal_camera_fs = normalize(normalmatrix * normal);
+    }
+
+
     vertcoords_camera_fs = vec3(modelviewmatrix * gl_Position);
 
 
