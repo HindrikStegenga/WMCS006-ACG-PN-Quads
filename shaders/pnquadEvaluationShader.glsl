@@ -54,6 +54,12 @@ float pd_b3(float t) {
 
 void main() {
 
+    // In memory as cw oriented patch:
+    // input[0] -> b0
+    // input[1] -> b1
+    // input[2] -> b2
+    // input[3] -> b3
+
     //  b0  - b03 - b30 - b3
     //  |     |     |     |
     //  b01 - b02 - b31 - b32
@@ -61,17 +67,6 @@ void main() {
     //  b10 - b13 - b20 - b23
     //  |     |     |     |
     //  b1 -  b12 - b21 - b2
-
-    // Maps to: (where p0 is array[0] etc.)
-
-    //  p0 -  p4 - p8 - p12
-    //  |     |     |     |
-    //  p1 -  p5 - p9 - p13
-    //  |     |     |     |
-    //  p2 -  p6 - p10 - p14
-    //  |     |     |     |
-    //  p3 -  p7 - p11 - p15
-
 
     vec3 p0 = gl_in[0].gl_Position.xyz;
     vec3 p1 = gl_in[1].gl_Position.xyz;
