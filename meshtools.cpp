@@ -495,10 +495,10 @@ QuadPatch extractQuadPatch(Face& face) {
     auto patch = QuadPatch{};
 
     patch.vertIndices = {
-        p5p6->target->index,
-        p6p10->target->index,
+        p9p5->target->index,
         p10p9->target->index,
-        p9p5->target->index
+        p6p10->target->index,
+        p5p6->target->index
     };
 
     return patch;

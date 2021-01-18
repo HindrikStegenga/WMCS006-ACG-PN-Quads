@@ -1,6 +1,6 @@
 #version 410
 
-layout(quads, equal_spacing, ccw) in;
+layout(quads, equal_spacing, cw) in;
 
 layout (location = 0) in vec3 tess_vertcoords_camera_fs[];
 layout (location = 1) in vec3 tess_vertnormal_camera_fs[];
@@ -73,15 +73,15 @@ void main() {
     //  p3 -  p7 - p11 - p15
 
 
-    vec3 p0 = gl_in[2].gl_Position.xyz;
-    vec3 p1 = gl_in[3].gl_Position.xyz;
-    vec3 p2 = gl_in[0].gl_Position.xyz;
-    vec3 p3 = gl_in[1].gl_Position.xyz;
+    vec3 p0 = gl_in[0].gl_Position.xyz;
+    vec3 p1 = gl_in[1].gl_Position.xyz;
+    vec3 p2 = gl_in[2].gl_Position.xyz;
+    vec3 p3 = gl_in[3].gl_Position.xyz;
 
-    vec3 n0 = normalize(tess_vertnormal_camera_fs[2]);
-    vec3 n1 = normalize(tess_vertnormal_camera_fs[3]);
-    vec3 n2 = normalize(tess_vertnormal_camera_fs[0]);
-    vec3 n3 = normalize(tess_vertnormal_camera_fs[1]);
+    vec3 n0 = normalize(tess_vertnormal_camera_fs[0]);
+    vec3 n1 = normalize(tess_vertnormal_camera_fs[1]);
+    vec3 n2 = normalize(tess_vertnormal_camera_fs[2]);
+    vec3 n3 = normalize(tess_vertnormal_camera_fs[3]);
 
     // Compute boundary points
 
@@ -179,9 +179,8 @@ void main() {
 
 
         // Cross, normalize and multiply with the normals matrix (and another normalize) to get analytical normal.
-        // We also need to invert the normal here.
         // This normal is then interpolated in the fragment shader automatically.
-        vec3 normal = normalize(cross(dpdu, dpdv)) * -1.0;
+        vec3 normal = normalize(cross(dpdu, dpdv));
         vertnormal_camera_fs = normalize(normalmatrix * normal);
     }
 
