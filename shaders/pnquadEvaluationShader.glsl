@@ -2,8 +2,11 @@
 
 layout(quads, equal_spacing, cw) in;
 
-layout (location = 0) in vec3 tess_vertcoords_camera_fs[];
-layout (location = 1) in vec3 tess_vertnormal_camera_fs[];
+struct PatchOut {
+    vec3 normals[9];
+};
+
+patch in PatchOut normal_cp;
 
 uniform mat4 modelviewmatrix;
 uniform mat4 projectionmatrix;
@@ -14,8 +17,6 @@ uniform float sigma;
 
 layout (location = 0) out vec3 vertcoords_camera_fs;
 layout (location = 1) out vec3 vertnormal_camera_fs;
-
-
 
 // Basis functions for Bézier surface.
 float b_0(float t) {
@@ -56,9 +57,10 @@ void main() {
 
     // In memory as cw oriented patch:
     // input[0] -> b0
-    // input[1] -> b1
-    // input[2] -> b2
+    // input[1] -> b03
+    // input[2] -> b30
     // input[3] -> b3
+    // etc.
 
     //  b0  - b03 - b30 - b3
     //  |     |     |     |
@@ -68,67 +70,42 @@ void main() {
     //  |     |     |     |
     //  b1 -  b12 - b21 - b2
 
-    vec3 p0 = gl_in[0].gl_Position.xyz;
-    vec3 p1 = gl_in[1].gl_Position.xyz;
-    vec3 p2 = gl_in[2].gl_Position.xyz;
-    vec3 p3 = gl_in[3].gl_Position.xyz;
 
-    vec3 n0 = normalize(tess_vertnormal_camera_fs[0]);
-    vec3 n1 = normalize(tess_vertnormal_camera_fs[1]);
-    vec3 n2 = normalize(tess_vertnormal_camera_fs[2]);
-    vec3 n3 = normalize(tess_vertnormal_camera_fs[3]);
+    // Geometry input patch
 
-    // Compute boundary points
+    vec3 b0     = gl_in[0].gl_Position.xyz;
+    vec3 b03    = gl_in[1].gl_Position.xyz;
+    vec3 b30    = gl_in[2].gl_Position.xyz;
+    vec3 b3     = gl_in[3].gl_Position.xyz;
 
-    vec3 b0  = p0;
-    vec3 b01 = (2.0 * p0 + p1 - dot(p1 - p0, n0) * n0) / 3.0;
-    vec3 b10 = (2.0 * p1 + p0 - dot(p0 - p1, n1) * n1) / 3.0;
+    vec3 b01    = gl_in[4].gl_Position.xyz;
+    vec3 b02    = gl_in[5].gl_Position.xyz;
+    vec3 b31    = gl_in[6].gl_Position.xyz;
+    vec3 b32    = gl_in[7].gl_Position.xyz;
 
-    vec3 b1 = p1;
-    vec3 b12 = (2.0 * p1 + p2 - dot(p2 - p1, n1) * n1) / 3.0;
-    vec3 b21 = (2.0 * p2 + p1 - dot(p1 - p2, n2) * n2) / 3.0;
+    vec3 b10    = gl_in[8].gl_Position.xyz;
+    vec3 b13    = gl_in[9].gl_Position.xyz;
+    vec3 b20    = gl_in[10].gl_Position.xyz;
+    vec3 b23    = gl_in[11].gl_Position.xyz;
 
-    vec3 b2 = p2;
-    vec3 b23 = (2.0 * p2 + p3 - dot(p3 - p2, n2) * n2) / 3.0;
-    vec3 b32 = (2.0 * p3 + p2 - dot(p2 - p3, n3) * n3) / 3.0;
+    vec3 b1     = gl_in[12].gl_Position.xyz;
+    vec3 b12    = gl_in[13].gl_Position.xyz;
+    vec3 b21    = gl_in[14].gl_Position.xyz;
+    vec3 b2     = gl_in[15].gl_Position.xyz;
 
-    vec3 b3 = p3;
-    vec3 b30 = (2.0 * p3 + p0 - dot(p0 - p3, n3) * n3) / 3.0;
-    vec3 b03 = (2.0 * p0 + p3 - dot(p3 - p0, n0) * n0) / 3.0;
+    // Normal input patch
 
-    vec3 q = b01 + b10 + b12 + b21 + b23 + b32 + b30 + b03;
+    vec3 n0     = normal_cp.normals[0];
+    vec3 n30    = normal_cp.normals[1];
+    vec3 n3     = normal_cp.normals[2];
 
-    //b02
-    vec3 e = (2.0 * (b01 + b03 + q) - (b21 + b23)) / 18.0;
-    vec3 v = (4.0 * p0 + 2.0 * (p3 + p1) + p2) / 9.0;
-    vec3 b02 = (1.0 + sigma) * e - sigma * v;
+    vec3 n01    = normal_cp.normals[3];
+    vec3 n0123  = normal_cp.normals[4];
+    vec3 n23    = normal_cp.normals[5];
 
-    //b13
-    e = (2.0 * (b12 + b10 + q) - (b32 + b30)) / 18.0;
-    v = (4.0 * p1 + 2.0 * (p0 + p2) + p3) / 9.0;
-    vec3 b13 = (1.0 + sigma) * e - sigma * v;
-
-    //b20
-    e = (2.0 * (b23 + b21 + q) - (b03 + b01)) / 18.0;
-    v = (4.0 * p2 + 2.0 * (p1 + p3) + p0) / 9.0;
-    vec3 b20 = (1.0 + sigma) * e - sigma * v;
-
-    //b31
-    e = (2.0 * (b30 + b32 + q) - (b10 + b12)) / 18.0;
-    v = (4.0 * p3 + 2.0 * (p2 + p0) + p1) / 9.0;
-    vec3 b31 = (1.0 + sigma) * e - sigma * v;
-
-    float v01 = (2 * (dot(p1 - p0, n0 + n1) / dot(p1 - p0, p1 - p0)));
-    float v12 = (2 * (dot(p2 - p1, n1 + n2) / dot(p2 - p1, p2 - p1)));
-    float v23 = (2 * (dot(p3 - p2, n2 + n3) / dot(p3 - p2, p3 - p2)));
-    float v30 = (2 * (dot(p0 - p3, n3 + n0) / dot(p0 - p3, p0 - p3)));
-
-    vec3 n01 = normalize(n0 + n1 - v01 * (p1 - p0));
-    vec3 n12 = normalize(n1 + n2 - v12 * (p2 - p1));
-    vec3 n23 = normalize(n2 + n3 - v23 * (p3 - p2));
-    vec3 n30 = normalize(n3 + n0 - v30 * (p0 - p3));
-
-    vec3 n0123 = ((2.0 * (n01 + n12 + n23 + n30)) + (n0 + n1 + n2 + n3)) / 12.0;
+    vec3 n1     = normal_cp.normals[6];
+    vec3 n12    = normal_cp.normals[7];
+    vec3 n2     = normal_cp.normals[8];
 
     float su = gl_TessCoord.x;
     float sv = gl_TessCoord.y;
