@@ -494,6 +494,8 @@ QuadPatch extractQuadPatch(Face& face) {
     auto p9p5 = face.side->prev;
     auto patch = QuadPatch{};
 
+    // Store the quad as clockwise, with b0 at the top etc.
+
     patch.vertIndices = {
         p9p5->target->index,
         p10p9->target->index,
